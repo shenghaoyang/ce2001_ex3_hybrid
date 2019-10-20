@@ -23,6 +23,28 @@ func AscendingIntComparator(a, b int) int {
 	}
 }
 
+// HybridInsertionMergeSortAux uses both merge sort and insertion sort to sort a slice of integers in data
+// for elements in the range [first, last] using comparator cmp. Elements are sorted in ascending order.
+// min specifies the maximum count of data elements to be sorted before merge sort is used. Any number of elements
+// greater than that minimum will be sorted using insertion sort.
+// An auxiliary buffer aux of minimum size (last - first + 1) is also used to accelerate the merge process.
+func HybridInsertionMergeSortAux(data, aux []int, first, last, min int, cmp Comparator) {
+	numElems := (last - first) + 1
+
+	if numElems <= 1 {
+		return
+	}
+
+	if numElems > min {
+		mid := (first + last) / 2
+		HybridInsertionMergeSortAux(data, aux, first, mid, min, cmp)
+		HybridInsertionMergeSortAux(data, aux, mid+1, last, min, cmp)
+		mergeAux(data, aux, first, mid, last, cmp)
+	} else {
+		InsertionSort(data, first, last, cmp)
+	}
+}
+
 // HybridInsertionMergeSort uses both merge sort and insertion sort to sort a slice of integers in data
 // for elements in the range [first, last] using comparator cmp. Elements are sorted in ascending order.
 // min specifies the maximum count of data elements to be sorted before merge sort is used. Any number of elements
@@ -73,6 +95,22 @@ func InsertionSort(data []int, first, last int, cmp Comparator) {
 	}
 }
 
+// MergeSortAux sorts the integer slice in data for elements in the range [first, last], using comparator function cmp.
+// An auxiliary buffer aux of minimum size (last - first + 1) is also used to accelerate the merge process.
+// Elements are sorted in ascending order.
+func MergeSortAux(data, aux []int, first, last int, cmp Comparator) {
+	// Handle the case when we are sorting 0 elements or sorting only one element:
+	// Early return.
+	numElems := (last - first) + 1
+	if numElems <= 1 {
+		return
+	}
+	mid := (first + last) / 2
+	MergeSortAux(data, aux, first, mid, cmp)
+	MergeSortAux(data, aux, mid+1, last, cmp)
+	mergeAux(data, aux, first, mid, last, cmp)
+}
+
 // MergeSort sorts the integer slice in data for elements in the range [first, last], using comparator function cmp.
 // Elements are sorted in ascending order.
 func MergeSort(data []int, first, last int, cmp Comparator) {
@@ -86,6 +124,65 @@ func MergeSort(data []int, first, last int, cmp Comparator) {
 	MergeSort(data, first, mid, cmp)
 	MergeSort(data, mid+1, last, cmp)
 	merge(data, first, mid, last, cmp)
+}
+
+// mergeAux merges two sorted (in ascending order) sublists stored in data with the first sublist stored in
+// [first, mid] and the second sublist stored in [mid + 1, last], using comparator function cmp.
+// An auxiliary buffer aux of minimum size (last - first + 1) is also used to accelerate the merge process.
+// Elements are merged in ascending order.
+func mergeAux(data, aux []int, first, mid, last int, cmp Comparator) {
+	if (last - first) <= 0 {
+		return
+	}
+
+	f1 := first   // Index of first element in first sublist
+	e1 := mid     // Index of last element in first sublist
+	f2 := mid + 1 // Index of first element in second sublist
+	i := 0        // Index of next position to write to in auxiliary storage
+
+	for {
+		// Exit if any of the sublists are empty
+		switch {
+		case (e1 - f1) < 0:
+			// Sublist one is empty, copy to [first, f2)
+			copy(data[first:f2], aux[0:i])
+			return
+		case (last - f2) < 0:
+			// Sublist two is empty, move sublist 1 all the way to the end and
+			// copy aux to the original location of sublist one
+			copy(data[last-(e1-f1):last+1], data[f1:e1+1])
+			copy(data[first:last-(e1-f1)], aux[0:i])
+			return
+		}
+
+		// Compare elements @f1, f2
+		c := cmp(data[f1], data[f2])
+		switch {
+		case c < 0:
+			// element @f1 is smaller than that @f2, we take element @f1 directly
+			// account for shrunken size of first sublist
+			aux[i] = data[f1]
+			i++
+			f1++
+		case c == 0:
+			// element @f1 equal to element @f2
+			aux[i] = data[f1]
+			aux[i+1] = data[f2]
+			i += 2
+			// do accounting - account for the
+			// shrunken size of both the second sublist and the first sublist
+			f1++
+			f2++
+		case c > 0:
+			// element @f1 > element @ f2
+			// save element @f2
+			aux[i] = data[f2]
+			i++
+			// do accounting - account for the
+			// shrunken size of the second sublist
+			f2++
+		}
+	}
 }
 
 // merge merges two sorted (in ascending order) sublists stored in data with the first sublist stored in
@@ -145,5 +242,4 @@ func merge(data []int, first, mid, last int, cmp Comparator) {
 			f2++
 		}
 	}
-
 }

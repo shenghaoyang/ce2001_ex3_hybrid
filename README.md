@@ -1,4 +1,4 @@
-# ce2002_ex3_hybrid
+# ce2001_ex3_hybrid
 
 Hybrid implementation of merge sort combining insertion sort and merge sort.
 

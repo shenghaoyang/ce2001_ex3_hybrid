@@ -18,15 +18,16 @@ type sortfn func(data []int, first, last int, comparator customsort.Comparator)
 
 // TestSorts tests the three sort implementations, MergeSort, InsertionSort, and HybridInsertionMergeSort
 // for correctness against go's built in sort functionality.
-// The test is performed on input sizes from 2^1 to 2^18 (both inclusive) in ascending powers of 2. Randomly
+// The test is performed on input sizes from 2^1 to 2^17 (both inclusive) in ascending powers of 2. Randomly
 // generated data is sorted by both our implementation and the implementation in go's standard library.
 // The test is considered to have passed if the sort results produced by both methods match.
 func TestSorts(t *testing.T) {
-	max := 1 << 18
+	max := 1 << 17
 	src := rand.NewSource(time.Now().UnixNano())
 	refSortBuf := make([]int, max)
 	sortBuf := make([]int, max)
 	dataBuf := make([]int, max)
+	aux := make([]int, max)
 
 	sortdata.Random(dataBuf, src)
 
@@ -35,7 +36,7 @@ func TestSorts(t *testing.T) {
 		copy(refBuf, data)
 
 		sort.IntSlice(refBuf).Sort()
-		fn(buf, 0, len(buf) - 1, customsort.AscendingIntComparator)
+		fn(buf, 0, len(buf)-1, customsort.AscendingIntComparator)
 
 		return reflect.DeepEqual(buf, refBuf)
 	}
@@ -43,8 +44,15 @@ func TestSorts(t *testing.T) {
 	sortfns := [...]sortfn{customsort.MergeSort, customsort.InsertionSort,
 		func(data []int, f, l int, comparator customsort.Comparator) {
 			customsort.HybridInsertionMergeSort(data, f, l, 16, comparator)
+		},
+		func(data []int, f, l int, comparator customsort.Comparator) {
+			customsort.MergeSortAux(data, aux[f:l+1], f, l, comparator)
+		},
+		func(data []int, f, l int, comparator customsort.Comparator) {
+			customsort.HybridInsertionMergeSortAux(data, aux[f:l+1], f, l, 16, comparator)
 		}}
-	sortfnNames := [...]string{"MergeSort", "InsertionSort", "HybridInsertionMergeSortMin16"}
+	sortfnNames := [...]string{"MergeSort", "InsertionSort", "HybridInsertionMergeSortMin16",
+		"MergeSortAux", "HybridInsertionMergeSortAuxMin16"}
 
 	for j, fn := range sortfns {
 		for i := 1; (i << 1) <= max; i <<= 1 {

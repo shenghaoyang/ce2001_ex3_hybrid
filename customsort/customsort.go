@@ -3,12 +3,12 @@
 
 package customsort
 
-// Comparator is a type that compares two integers. It returns a value smaller than zero if the first integer
-// is to be considered smaller than the second, zero if the two integers are to be considered equal, and a value
-// greater than zero if the first integer is to be considered larger than the second.
+// Comparator is a function type for a function that compares two integers. It returns a value smaller than zero
+// if the first integer  is to be considered smaller than the second, zero if the two integers are to be considered
+// equal, and a value greater than zero if the first integer is to be considered larger than the second.
 type Comparator func(int, int) int
 
-// IntComparator is a function matching the signature specified through type Comparator that can be passed to
+// AscendingIntComparator is a function matching the signature of Comparator that can be passed to
 // the sort functions in this package to allow sorting of integers in ascending order.
 func AscendingIntComparator(a, b int) int {
 	switch {

@@ -25,6 +25,7 @@ func main() {
 		"path to file with input integers to sort or path to destination to write out generated data")
 	var loops = flag.Int("loops", 10, "number of loops to use in benchmarking")
 	var threshold = flag.Int("threshold", 0, "minumum number of elements required to use mergesort")
+	var aux = flag.Bool("aux", false, "use auxiliary storage for mergesort")
 	var err error
 
 	flag.Parse()
@@ -43,7 +44,7 @@ func main() {
 
 	switch *mode {
 	case "benchmark":
-		err = benchmark(*dataFile, *size, *loops, *threshold)
+		err = benchmark(*dataFile, *size, *loops, *threshold, *aux)
 	case "generate":
 		err = generate(*dataFile, *size, time.Now().UnixNano())
 	case "none":
@@ -57,7 +58,7 @@ func main() {
 	}
 }
 
-func benchmark(dataFile string, sz, loops, threshold int) error {
+func benchmark(dataFile string, sz, loops, threshold int, aux bool) error {
 	in, err := os.Open(dataFile)
 	if err != nil {
 		return fmt.Errorf("benchmark: cannot open input file: %v", err)
@@ -76,6 +77,8 @@ func benchmark(dataFile string, sz, loops, threshold int) error {
 	workon := make([]int, len(data))
 	copy(workon, data)
 
+	auxBuf := make([]int, len(data))
+
 	fmt.Printf("Bencharking with input size %v, and threshold %v (%v loops)\n",
 		sz, threshold, loops)
 	log.Printf("Make sure to ensure a consistent CPU frequency, and bind tasks to cores!")
@@ -88,9 +91,18 @@ func benchmark(dataFile string, sz, loops, threshold int) error {
 		return customsort.AscendingIntComparator(a, b)
 	}
 
+	// Select merge sort implementation
+	sortfn := func(data []int, f, l, t int, c customsort.Comparator) {
+		if aux {
+			customsort.HybridInsertionMergeSortAux(data, auxBuf, f, l, t, c)
+		} else {
+			customsort.HybridInsertionMergeSort(data, f, l, t, c)
+		}
+	}
+
 	// Separate out the run for finding number of key comparisons since it uses a different compare function
 	// than the rest and will hence use a different amount CPU time.
-	customsort.HybridInsertionMergeSort(workon, 0, len(workon) - 1, threshold, countCmp)
+	sortfn(workon, 0, len(workon)-1, threshold, countCmp)
 	log.Printf("Key comparisons: %v", compares)
 
 	// Runtimes per loop in seconds
@@ -98,8 +110,7 @@ func benchmark(dataFile string, sz, loops, threshold int) error {
 	for i := 0; i < loops; i++ {
 		copy(workon, data)
 		start := time.Now()
-		customsort.HybridInsertionMergeSort(workon, 0, len(workon) - 1, threshold,
-			customsort.AscendingIntComparator)
+		sortfn(workon, 0, len(workon)-1, threshold, customsort.AscendingIntComparator)
 		end := time.Now()
 
 		times[i] = end.Sub(start).Seconds()

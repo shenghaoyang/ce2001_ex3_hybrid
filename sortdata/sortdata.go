@@ -5,12 +5,12 @@ package sortdata
 
 import "math/rand"
 
-// The function Random fills a slice of integers with randomly generated integers using a source.
+// The function Random fills a slice of integers with randomly generated positive int32s using a source.
 // The slice is never resliced to access unused capacity.
 func Random(out []int, src rand.Source) {
 	gen := rand.New(src)
 
 	for i := 0; i < len(out); i++ {
-		out[i] = gen.Int()
+		out[i] = int(gen.Int31())
 	}
 }

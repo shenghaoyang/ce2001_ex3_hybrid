@@ -26,7 +26,7 @@ func AscendingIntComparator(a, b int) int {
 // HybridInsertionMergeSort uses both merge sort and insertion sort to sort a slice of integers in data
 // for elements in the range [first, last] using comparator cmp. Elements are sorted in ascending order.
 // min specifies the maximum count of data elements to be sorted before merge sort is used. Any number of elements
-// below that minimum will be sorted using insertion sort.
+// greater than that minimum will be sorted using insertion sort.
 func HybridInsertionMergeSort(data []int, first, last, min int, cmp Comparator) {
 	numElems := (last - first) + 1
 
@@ -34,7 +34,7 @@ func HybridInsertionMergeSort(data []int, first, last, min int, cmp Comparator) 
 		return
 	}
 
-	if numElems >= min {
+	if numElems > min {
 		mid := (first + last) / 2
 		MergeSort(data, first, mid, cmp)
 		MergeSort(data, mid+1, last, cmp)
@@ -58,12 +58,12 @@ func InsertionSort(data []int, first, last int, cmp Comparator) {
 	for i := first + 1; i <= last; i++ {
 
 		for j := i; j > first; j-- {
-			c := cmp(data[j], data[j - 1])
+			c := cmp(data[j], data[j-1])
 
 			switch {
 			case c < 0:
-				t := data[j - 1]
-				data[j - 1] = data[j]
+				t := data[j-1]
+				data[j-1] = data[j]
 				data[j] = t
 			case c >= 0:
 				break
@@ -84,7 +84,7 @@ func MergeSort(data []int, first, last int, cmp Comparator) {
 	}
 	mid := (first + last) / 2
 	MergeSort(data, first, mid, cmp)
-	MergeSort(data, mid + 1, last, cmp)
+	MergeSort(data, mid+1, last, cmp)
 	merge(data, first, mid, last, cmp)
 }
 
@@ -96,11 +96,11 @@ func merge(data []int, first, mid, last int, cmp Comparator) {
 		return
 	}
 
-	f1 := first		// Index of first element in first sublist
-	e1 := mid		// Index of last element in first sublist
-	f2 := mid + 1	// Index of first element in second sublist
+	f1 := first   // Index of first element in first sublist
+	e1 := mid     // Index of last element in first sublist
+	f2 := mid + 1 // Index of first element in second sublist
 
-	for ;; {
+	for {
 		// Exit if any of the sublists are empty
 		if ((e1 - f1) < 0) || ((last - f2) < 0) {
 			return
@@ -120,9 +120,9 @@ func merge(data []int, first, mid, last int, cmp Comparator) {
 			// shift data from [f1 + 1, e1] forward by one index to overwrite element @f2
 			// destination is [f1 + 2, e1 + 1]
 			// remember slices are exclusive.
-			copy(data[f1 + 2:e1 + 2], data[f1 + 1:e1 + 1])
+			copy(data[f1+2:e1+2], data[f1+1:e1+1])
 			// store element @f2
-			data[f1 + 1] = t
+			data[f1+1] = t
 			// do accounting - account for the
 			// shrunken size of both the second sublist and the first sublist
 			f1 += 2
@@ -135,7 +135,7 @@ func merge(data []int, first, mid, last int, cmp Comparator) {
 			// shift data from [f1, e1] forward by one index to overwrite element @f2
 			// destination is [f1 + 2, e1 + 1]
 			// remember slices are exclusive.
-			copy(data[f1 + 1:e1 + 2], data[f1:e1 + 1])
+			copy(data[f1+1:e1+2], data[f1:e1+1])
 			// store element @f2
 			data[f1] = t
 			// do accounting - account for the

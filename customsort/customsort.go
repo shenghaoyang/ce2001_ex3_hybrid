@@ -36,8 +36,8 @@ func HybridInsertionMergeSort(data []int, first, last, min int, cmp Comparator) 
 
 	if numElems > min {
 		mid := (first + last) / 2
-		MergeSort(data, first, mid, cmp)
-		MergeSort(data, mid+1, last, cmp)
+		HybridInsertionMergeSort(data, first, mid, min, cmp)
+		HybridInsertionMergeSort(data, mid+1, last, min, cmp)
 		merge(data, first, mid, last, cmp)
 	} else {
 		InsertionSort(data, first, last, cmp)

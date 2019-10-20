@@ -1,0 +1,2 @@
+Bencharking with input size 65536, and threshold 16384 (32 loops)
+Key comparisons: 536969209, Average time: 2.5872048114687503 s, Standard deviation: 0.0099886749862368 s
